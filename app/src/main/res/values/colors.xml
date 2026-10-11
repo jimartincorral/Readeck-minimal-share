@@ -1,0 +1,5 @@
+<resources>
+    <color name="accent">#0F766E</color>
+    <color name="icon_background">#0F766E</color>
+    <color name="icon_foreground">#FFFFFF</color>
+</resources>

@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Readeck Share</string>
+    <string name="share_label">Readeck</string>
+
+    <string name="settings_intro">Share any link from any app and pick “Readeck” to save it to your server. The app you are in stays open.</string>
+    <string name="server_url">Server URL</string>
+    <string name="server_url_hint">https://readeck.example.com</string>
+    <string name="api_token">API token</string>
+    <string name="api_token_help">Create one in Readeck under Settings → API tokens, with permission to add bookmarks.</string>
+    <string name="labels">Labels (optional)</string>
+    <string name="labels_hint">e.g. phone, to-read</string>
+    <string name="labels_help">Comma-separated. Added to every link you share.</string>
+    <string name="save_and_test">Save and test connection</string>
+    <string name="testing">Testing…</string>
+    <string name="connected_as">Saved. Connected as %1$s.</string>
+    <string name="connected">Saved. Connected.</string>
+    <string name="missing_fields">Enter the server URL and an API token.</string>
+
+    <string name="saving">Saving to Readeck…</string>
+    <string name="saved">Saved to Readeck ✓</string>
+    <string name="queued">Queued — will save when online</string>
+    <string name="save_failed">Couldn’t save to Readeck</string>
+    <string name="no_link">No link found in what was shared</string>
+    <string name="not_configured">Set up your Readeck server first</string>
+    <string name="set_up">Set up</string>
+    <string name="unreachable">Couldn’t reach the Readeck server</string>
+</resources>
