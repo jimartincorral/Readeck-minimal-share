@@ -24,4 +24,10 @@
     <string name="not_configured">Set up your Readeck server first</string>
     <string name="set_up">Set up</string>
     <string name="unreachable">Couldn’t reach the Readeck server</string>
+    <string name="queue_header">Waiting to send (%1$d)</string>
+    <string name="queue_waiting">Waiting to send</string>
+    <string name="queue_retrying">Retrying — %1$s</string>
+    <string name="queue_failed">Failed — %1$s</string>
+    <string name="retry">Retry</string>
+    <string name="remove">Remove</string>
 </resources>

@@ -35,19 +35,26 @@ class SaveWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
 
         try {
             ReadeckClient(prefs.serverUrl, prefs.token).addBookmark(url, title, labels)
+            PendingStore.remove(applicationContext, url)
             notifyIfSheetGone(applicationContext.getString(R.string.saved))
             Result.success()
         } catch (e: ReadeckClient.HttpException) {
             // 5xx is likely temporary; 4xx (bad token, invalid URL…) won't fix itself.
-            if (e.code >= 500 && runAttemptCount < MAX_ATTEMPTS) Result.retry()
-            else fail(e.message ?: "HTTP ${e.code}")
+            val message = e.message ?: "HTTP ${e.code}"
+            if (e.code >= 500 && runAttemptCount < MAX_ATTEMPTS) retryLater(message) else fail(message)
         } catch (e: IOException) {
-            if (runAttemptCount < MAX_ATTEMPTS) Result.retry()
-            else fail(applicationContext.getString(R.string.unreachable))
+            val message = applicationContext.getString(R.string.unreachable)
+            if (runAttemptCount < MAX_ATTEMPTS) retryLater(message) else fail(message)
         }
     }
 
+    private fun retryLater(message: String): Result {
+        inputData.getString(KEY_URL)?.let { PendingStore.markRetrying(applicationContext, it, message) }
+        return Result.retry()
+    }
+
     private fun fail(message: String): Result {
+        inputData.getString(KEY_URL)?.let { PendingStore.markFailed(applicationContext, it, message) }
         val prefix = applicationContext.getString(R.string.save_failed)
         notifyIfSheetGone("$prefix: $message")
         return Result.failure(workDataOf(KEY_ERROR to message))
@@ -75,6 +82,30 @@ class SaveWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
          * again while it's still queued doesn't create a duplicate.
          */
         fun enqueue(context: Context, link: SharedLink, labels: List<String>): String {
+            PendingStore.add(context, link, labels)
+            return schedule(context, link, labels, ExistingWorkPolicy.KEEP)
+        }
+
+        /** Sends a queued or failed link again, as soon as there's a connection. */
+        fun retry(context: Context, url: String) {
+            val pending = PendingStore.get(context, url) ?: return
+            val link = SharedLink(pending.url, pending.title)
+            PendingStore.add(context, link, pending.labels)
+            schedule(context, link, pending.labels, ExistingWorkPolicy.REPLACE)
+        }
+
+        /** Stops trying to send a link and forgets it. */
+        fun remove(context: Context, url: String) {
+            WorkManager.getInstance(context).cancelUniqueWork(TAG_PREFIX + url)
+            PendingStore.remove(context, url)
+        }
+
+        private fun schedule(
+            context: Context,
+            link: SharedLink,
+            labels: List<String>,
+            policy: ExistingWorkPolicy,
+        ): String {
             val name = TAG_PREFIX + link.url
             val request = OneTimeWorkRequestBuilder<SaveWorker>()
                 .setInputData(
@@ -90,7 +121,7 @@ class SaveWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
                 .addTag(name)
                 .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(name, ExistingWorkPolicy.KEEP, request)
+            WorkManager.getInstance(context).enqueueUniqueWork(name, policy, request)
             return name
         }
     }

@@ -40,4 +40,6 @@ kotlin {
 dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.0")
     testImplementation("junit:junit:4.13.2")
+    // Android's built-in org.json is only a stub in plain-JVM unit tests.
+    testImplementation("org.json:json:20240303")
 }

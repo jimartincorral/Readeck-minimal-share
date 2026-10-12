@@ -4,6 +4,7 @@ A tiny Android app that adds **Readeck** to the system share menu. Share a link 
 
 - **No taps needed.** Picking "Readeck" in the share menu saves the link right away. A small sheet at the bottom of the screen shows *Saving… → Saved ✓* and then closes itself.
 - **Works offline.** If you share while offline, or the server can't be reached, the link is queued and sent once you're back online. You get a short toast when it arrives.
+- **See what's waiting.** Links that haven't reached Readeck yet are listed at the top of the app, along with why (waiting for a connection, retrying, or failed, e.g. because of a bad token). You can retry or remove each one, or tap it to open it in your browser.
 - **Default labels.** Optionally, set labels that are added to every link you share.
 - **Small.** Plain Android views, no tracking, and one dependency (AndroidX WorkManager).
 
