@@ -47,13 +47,26 @@ Every push runs these checks on GitHub Actions, and the debug APK is attached to
 
 Releases are built and signed by GitHub Actions when you push a version tag.
 
-**One-time setup: create a signing key** and keep a backup somewhere safe. Every future release must be signed with the same key, or people won't be able to update.
+**One-time setup: create a signing key** and keep a backup somewhere safe (with its password). Every future release must be signed with the same key, or people won't be able to update.
+
+`keytool` comes with Java. If you don't have it, install a JDK (on Windows: `winget install EclipseAdoptium.Temurin.17.JDK`, then open a new terminal), or use the copy bundled with Android Studio in its `jbr/bin` folder.
+
+On Linux or macOS:
 
 ```sh
 keytool -genkeypair -v -keystore release.jks -alias readeck-share \
   -keyalg RSA -keysize 4096 -validity 10000
 base64 -w0 release.jks > release.jks.b64   # on macOS: base64 -i release.jks -o release.jks.b64
 ```
+
+On Windows (PowerShell):
+
+```powershell
+keytool -genkeypair -v -keystore release.jks -alias readeck-share -keyalg RSA -keysize 4096 -validity 10000
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\release.jks")) | Set-Content release.jks.b64
+```
+
+`keytool` asks for a password and some name details (these can be anything). If it doesn't ask for a separate key password, the key password is the same as the keystore password. Once the secrets below are saved, you can delete `release.jks.b64`.
 
 Then add these repository secrets under **Settings → Secrets and variables → Actions**:
 
