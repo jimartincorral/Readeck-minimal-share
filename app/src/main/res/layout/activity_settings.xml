@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -33,7 +34,8 @@
             <TextView
                 android:id="@+id/queue_header"
                 style="@style/FieldLabel"
-                android:accessibilityHeading="true" />
+                android:accessibilityHeading="true"
+                tools:targetApi="28" />
 
             <LinearLayout
                 android:id="@+id/queue_list"
@@ -52,8 +54,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autofillHints="url"
-            android:hint="@string/server_url_hint"
             android:inputType="textUri" />
+
+        <TextView
+            style="@style/FieldHelp"
+            android:text="@string/server_url_help" />
 
         <TextView
             style="@style/FieldLabel"
@@ -81,7 +86,6 @@
             android:id="@+id/labels"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/labels_hint"
             android:importantForAutofill="no"
             android:inputType="text" />
 

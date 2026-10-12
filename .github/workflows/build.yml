@@ -30,7 +30,7 @@ jobs:
         if: always()
         run: cat app/build/reports/lint-results-release.txt || true
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: readeck-share-debug
           path: app/build/outputs/apk/debug/app-debug.apk

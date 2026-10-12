@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "io.github.jimartincorral.readeckshare"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.github.jimartincorral.readeckshare"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
     }
@@ -69,7 +69,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
     testImplementation("junit:junit:4.13.2")
     // Android's built-in org.json is only a stub in plain-JVM unit tests.
     testImplementation("org.json:json:20240303")

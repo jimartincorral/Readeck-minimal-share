@@ -4,12 +4,11 @@
 
     <string name="settings_intro">Share any link from any app and pick “Readeck” to save it to your server. The app you are in stays open.</string>
     <string name="server_url">Server URL</string>
-    <string name="server_url_hint">https://readeck.example.com</string>
+    <string name="server_url_help">For example, https://readeck.example.com</string>
     <string name="api_token">API token</string>
     <string name="api_token_help">Create one in Readeck under Settings → API tokens, with permission to add bookmarks.</string>
     <string name="labels">Labels (optional)</string>
-    <string name="labels_hint">e.g. phone, to-read</string>
-    <string name="labels_help">Comma-separated. Added to every link you share.</string>
+    <string name="labels_help">Comma-separated, e.g. phone, to-read. Added to every link you share.</string>
     <string name="save_and_test">Save and test connection</string>
     <string name="testing">Testing…</string>
     <string name="connected_as">Saved. Connected as %1$s.</string>
