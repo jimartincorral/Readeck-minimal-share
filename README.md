@@ -81,7 +81,7 @@ Then add these repository secrets under **Settings → Secrets and variables →
 
 **For each release:**
 
-1. Bump `versionCode` (by 1) and `versionName` in `app/build.gradle.kts`, and merge to `main`.
+1. Bump `versionCode` (by 1) and `versionName` in `app/build.gradle.kts`, write the release notes in `release-notes/vX.Y.Z.md`, and merge to `main`.
 2. Tag the commit and push the tag:
    ```sh
    git tag v1.0.0
@@ -90,7 +90,7 @@ Then add these repository secrets under **Settings → Secrets and variables →
    Or, on GitHub, go to **Releases → Draft a new release**, create the tag `v1.0.0` on `main`, and publish.
 3. The **Release** workflow checks that the tag matches `versionName`, builds and signs the APK, and attaches it to the release, creating one with generated notes if you only pushed a tag.
 
-If a release run fails (for example because of a wrong secret), fix the cause, then go to **Actions → Release → Run workflow** and enter the tag. That rebuilds the tag's code with the latest workflow and attaches the APK to the release, so you don't need to delete and recreate the tag.
+If a release run fails (for example because of a wrong secret), or you want to update a release's notes, fix the cause or the notes file on `main`, then go to **Actions → Release → Run workflow** and enter the tag. That rebuilds the tag's code with the latest workflow and attaches the APK to the release, so you don't need to delete and recreate the tag.
 
 ## License
 
