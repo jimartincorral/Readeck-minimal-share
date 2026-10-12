@@ -81,15 +81,31 @@ jobs:
           apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
           "$apksigner" verify --print-certs "$apk"
 
+      # Release notes come from release-notes/<tag>.md if it exists. It's read from the
+      # commit this workflow runs on (main for "Run workflow"), not from the tag, so notes
+      # can be added or fixed after tagging. Without the file, GitHub generates notes,
+      # or the notes of a release published from the GitHub UI are kept.
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        # If the release was already published from the GitHub UI, just attach the APK to it.
         run: |
           apk="readeck-share-$TAG.apk"
+          notes="$RUNNER_TEMP/notes.md"
+          if gh api "repos/$GITHUB_REPOSITORY/contents/release-notes/$TAG.md?ref=$GITHUB_SHA" \
+              -H "Accept: application/vnd.github.raw" > "$notes" 2> /dev/null; then
+            notes_args=(--notes-file "$notes")
+          else
+            notes_args=()
+          fi
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "$apk" --clobber
+            if [ ${#notes_args[@]} -gt 0 ]; then
+              gh release edit "$TAG" --title "Readeck Share $TAG" "${notes_args[@]}"
+            fi
           else
+            if [ ${#notes_args[@]} -eq 0 ]; then
+              notes_args=(--generate-notes)
+            fi
             gh release create "$TAG" "$apk" --verify-tag \
-              --title "Readeck Share $TAG" --generate-notes
+              --title "Readeck Share $TAG" "${notes_args[@]}"
           fi
