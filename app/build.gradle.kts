@@ -52,9 +52,8 @@ android {
 
     lint {
         abortOnError = true
-        // Print findings in the CI log.
+        // Plain-text report, printed in the CI log.
         textReport = true
-        textOutput = file("stdout")
     }
 
     compileOptions {
