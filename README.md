@@ -85,7 +85,8 @@ Then add these repository secrets under **Settings → Secrets and variables →
    git tag v1.0.0
    git push origin v1.0.0
    ```
-3. The **Release** workflow checks that the tag matches `versionName`, builds and signs the APK, and publishes it as a GitHub release with generated notes.
+   Or, on GitHub, go to **Releases → Draft a new release**, create the tag `v1.0.0` on `main`, and publish.
+3. The **Release** workflow checks that the tag matches `versionName`, builds and signs the APK, and attaches it to the release, creating one with generated notes if you only pushed a tag.
 
 ## License
 
