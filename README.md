@@ -63,16 +63,18 @@ On Windows (PowerShell):
 
 ```powershell
 keytool -genkeypair -v -keystore release.jks -alias readeck-share -keyalg RSA -keysize 4096 -validity 10000
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\release.jks")) | Set-Content release.jks.b64
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\release.jks")) | Set-Clipboard
 ```
 
-`keytool` asks for a password and some name details (these can be anything). If it doesn't ask for a separate key password, the key password is the same as the keystore password. Once the secrets below are saved, you can delete `release.jks.b64`.
+This copies the encoded key to the clipboard, ready to paste as `RELEASE_KEYSTORE_BASE64`.
+
+`keytool` asks for a password and some name details (these can be anything). If it doesn't ask for a separate key password, the key password is the same as the keystore password. Once the secrets below are saved, you can delete `release.jks.b64` if you created one.
 
 Then add these repository secrets under **Settings → Secrets and variables → Actions**:
 
 | Secret | Value |
 | --- | --- |
-| `RELEASE_KEYSTORE_BASE64` | contents of `release.jks.b64` |
+| `RELEASE_KEYSTORE_BASE64` | contents of `release.jks.b64` (or the clipboard, on Windows) |
 | `RELEASE_KEYSTORE_PASSWORD` | the keystore password |
 | `RELEASE_KEY_ALIAS` | `readeck-share` (or the alias you chose) |
 | `RELEASE_KEY_PASSWORD` | the key password (same as the keystore password unless you set a different one) |
@@ -87,6 +89,8 @@ Then add these repository secrets under **Settings → Secrets and variables →
    ```
    Or, on GitHub, go to **Releases → Draft a new release**, create the tag `v1.0.0` on `main`, and publish.
 3. The **Release** workflow checks that the tag matches `versionName`, builds and signs the APK, and attaches it to the release, creating one with generated notes if you only pushed a tag.
+
+If a release run fails (for example because of a wrong secret), fix the cause, then go to **Actions → Release → Run workflow** and enter the tag. That rebuilds the tag's code with the latest workflow and attaches the APK to the release, so you don't need to delete and recreate the tag.
 
 ## License
 

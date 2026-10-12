@@ -1,10 +1,19 @@
 name: Release
 
-# Push a tag like v1.0.0 (matching versionName in app/build.gradle.kts) to publish a
-# signed APK as a GitHub release. Needs the signing secrets described in the README.
+# Push a tag like v1.0.0 (matching versionName in app/build.gradle.kts), or publish a
+# release with a new tag from the GitHub UI, to build a signed APK and attach it to the
+# GitHub release. Needs the signing secrets described in the README.
+#
+# To rebuild an existing tag (e.g. after fixing a secret), use "Run workflow" on the
+# Actions tab: it builds that tag's code with the latest version of this workflow.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and release, e.g. v1.0.0
+        required: true
 
 permissions:
   contents: write
@@ -12,8 +21,12 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
 
       - uses: actions/setup-java@v5
         with:
@@ -25,21 +38,36 @@ jobs:
       - name: Check tag matches versionName
         run: |
           version=$(sed -n 's/^ *versionName = "\(.*\)"/\1/p' app/build.gradle.kts)
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME doesn't match versionName $version in app/build.gradle.kts"
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG doesn't match versionName $version in app/build.gradle.kts"
             exit 1
           fi
 
-      - name: Decode signing key
+      - name: Decode and check signing key
         env:
           RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         run: |
-          if [ -z "$RELEASE_KEYSTORE_BASE64" ]; then
-            echo "::error::RELEASE_KEYSTORE_BASE64 secret is not set"
+          for name in RELEASE_KEYSTORE_BASE64 RELEASE_KEYSTORE_PASSWORD RELEASE_KEY_ALIAS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::The $name secret is not set"
+              exit 1
+            fi
+          done
+          keystore="$RUNNER_TEMP/release.jks"
+          # --ignore-garbage skips line breaks and other stray characters, e.g. the \r\n
+          # that Windows tools add when the secret is copied from a file.
+          if ! printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode --ignore-garbage > "$keystore"; then
+            echo "::error::RELEASE_KEYSTORE_BASE64 isn't valid base64"
             exit 1
           fi
-          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
-          echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          if ! keytool -list -keystore "$keystore" -storepass "$RELEASE_KEYSTORE_PASSWORD" \
+              -alias "$RELEASE_KEY_ALIAS" > /dev/null; then
+            echo "::error::Couldn't open the keystore: check RELEASE_KEYSTORE_PASSWORD and RELEASE_KEY_ALIAS"
+            exit 1
+          fi
+          echo "RELEASE_KEYSTORE_PATH=$keystore" >> "$GITHUB_ENV"
 
       - name: Build signed release APK
         env:
@@ -48,7 +76,7 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
           ./gradlew --no-daemon lintRelease testReleaseUnitTest assembleRelease
-          apk="readeck-share-$GITHUB_REF_NAME.apk"
+          apk="readeck-share-$TAG.apk"
           cp app/build/outputs/apk/release/app-release.apk "$apk"
           apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
           "$apksigner" verify --print-certs "$apk"
@@ -58,10 +86,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         # If the release was already published from the GitHub UI, just attach the APK to it.
         run: |
-          apk="readeck-share-$GITHUB_REF_NAME.apk"
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "$apk" --clobber
+          apk="readeck-share-$TAG.apk"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" "$apk" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" "$apk" \
-              --title "Readeck Share $GITHUB_REF_NAME" --generate-notes
+            gh release create "$TAG" "$apk" --verify-tag \
+              --title "Readeck Share $TAG" --generate-notes
           fi
