@@ -2,8 +2,12 @@ name: Build
 
 on:
   push:
+    branches: ["**"]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -18,8 +22,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK and run unit tests
-        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest
+      # The release build is unsigned here; it's built to catch R8/shrinking problems early.
+      - name: Build, lint and test
+        run: ./gradlew --no-daemon assembleDebug assembleRelease lintRelease testDebugUnitTest
 
       - uses: actions/upload-artifact@v4
         with:

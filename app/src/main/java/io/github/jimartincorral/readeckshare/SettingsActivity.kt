@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -29,6 +31,11 @@ class SettingsActivity : Activity() {
         queueSection = findViewById(R.id.queue_section)
         queueHeader = findViewById(R.id.queue_header)
         queueList = findViewById(R.id.queue_list)
+
+        findViewById<TextView>(R.id.about).apply {
+            text = Html.fromHtml(getString(R.string.about, BuildConfig.VERSION_NAME), Html.FROM_HTML_MODE_COMPACT)
+            movementMethod = LinkMovementMethod.getInstance()
+        }
 
         val prefs = Prefs(this)
         val serverUrl = findViewById<EditText>(R.id.server_url)

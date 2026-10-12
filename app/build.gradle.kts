@@ -14,7 +14,21 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
+    }
+
+    // Release builds are signed in CI from repository secrets (see README → Releasing).
+    // Without them, assembleRelease produces an unsigned APK.
+    val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+    signingConfigs {
+        if (keystorePath != null) {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -22,7 +36,25 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            signingConfig = signingConfigs.findByName("release")
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    // Don't embed the Google-signed dependency metadata block in the APK.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
+    lint {
+        abortOnError = true
+        // Print findings in the CI log.
+        textReport = true
+        textOutput = file("stdout")
     }
 
     compileOptions {

@@ -102,5 +102,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:accessibilityLiveRegion="polite" />
+
+        <TextView
+            android:id="@+id/about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="?android:attr/textColorSecondary" />
     </LinearLayout>
 </ScrollView>
